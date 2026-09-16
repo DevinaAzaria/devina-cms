@@ -1,0 +1,15 @@
+{
+  "name": "devinaazaria/devina-cms",
+  "description": "Lightweight reusable public-content CMS for custom web applications.",
+  "type": "library",
+  "license": "Apache-2.0",
+  "authors": [{"name": "DevinaAzaria"}],
+  "require": {
+    "php": ">=8.2",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-iconv": "*",
+    "ext-fileinfo": "*"
+  },
+  "autoload": {"psr-4": {"DevinaCms\\": "src/"}}
+}

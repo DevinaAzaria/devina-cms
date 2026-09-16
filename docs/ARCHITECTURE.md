@@ -1,108 +1,68 @@
-# Devina CMS — Architecture Baseline
+# Devina CMS — Architecture
 
-Status: foundation / pre-release
+Status: `0.1.0-dev` functional foundation / pre-release.
 
 ## Purpose
 
-Devina CMS is a reusable public-content layer for projects that also have their own application logic.
+Devina CMS is a reusable public-content layer for products that also have their own application logic. It stays deliberately small so a personal project, company, or GitHub organization can adopt it without coupling business-domain data to CMS internals.
 
-It should stay small enough to embed into products owned by individuals, companies or GitHub organizations without forcing the host product to adopt CMS-specific assumptions for its business domain.
+## v0.1 runtime choice
 
-## Responsibilities
+The reference implementation uses **dependency-free PHP 8.2+** with PDO.
 
-Devina CMS is responsible for generic editorial concerns such as:
+Why this baseline:
 
-- pages;
-- articles/news;
-- events;
-- navigation;
-- media metadata;
-- SEO metadata;
-- publication state;
-- editor/admin operations;
-- generic content delivery interfaces;
-- extension points for host projects.
+- deployable on ordinary shared hosting as well as VPS/container environments;
+- no Node or package-manager runtime required in production;
+- SQLite for small/local deployments;
+- MySQL/MariaDB for typical hosted production deployments;
+- easy to embed directly in a PHP product;
+- still usable by non-PHP products through the read-only JSON API.
 
-The host application remains responsible for:
-
-- end-user authentication and product RBAC;
-- transactions;
-- learning, commerce, booking, CRM or other domain workflows;
-- private integrations;
-- project-specific business rules;
-- domain-specific analytics;
-- project secrets and production configuration.
-
-## Integration model
+## Components
 
 ```text
-                       Host Product
-                 ┌──────────┴──────────┐
-                 ▼                     ▼
-          Devina CMS layer       Host application
-          public/editorial       domain/business logic
-                 │                     │
-                 └──────────┬──────────┘
-                            ▼
-                    shared delivery surface
+Devina CMS
+├── src/                  generic core and repositories
+├── public/admin/         small editorial UI
+├── public/index.php      public read-only API
+├── public/media.php      controlled media proxy
+├── bin/setup.php         schema + first admin bootstrap
+└── storage/              runtime data; not source-controlled
 ```
 
-A project may expose both layers on one domain, for example:
+## Editorial responsibilities
 
-```text
-example.com/             public content
-example.com/articles     CMS content
-example.com/events       CMS content
-example.com/login        host application
-example.com/dashboard    host application
-```
+Devina CMS owns pages, articles/news, events, navigation, media metadata/uploads, SEO metadata, draft/publish state, scheduled publication, CMS editor/admin operations, and public content delivery interfaces.
+
+The host application owns end-user authentication/RBAC, transactions, domain workflows, private integrations, project-specific business rules/analytics, secrets and production configuration.
+
+## Integration modes
+
+### Library mode
+
+A PHP host loads `bootstrap.php` and uses the repository facade directly. The host owns routes and presentation.
+
+### Service/API mode
+
+A non-PHP or separately deployed host consumes the public read-only API. Editorial writes still happen in the CMS admin surface or a trusted server-side integration.
+
+## Content rendering boundary
+
+Content `body` is stored as Markdown/plain source. Devina CMS v0.1 does not render stored body source into public HTML. The consuming product chooses its Markdown renderer and sanitization/CSP strategy.
+
+## Authentication boundary
+
+The built-in `admin` / `editor` accounts authenticate CMS operators only. They are not application users. A host such as OLS must keep student/mentor/admin product authorization separate from CMS editorial sessions.
 
 ## Portability rule
 
-The CMS core must not assume that:
+The CMS must not assume that the adopter belongs to DevinaHQ, uses a specific domain, uses OLS roles/schemas, mounts the CMS at `/`, or shares another adopter's database/frontend stack.
 
-- the adopter belongs to DevinaHQ;
-- the adopter uses a particular company domain;
-- the adopter uses OLS-specific roles or schemas;
-- the adopter exposes the CMS on the site root;
-- the host application's database schema is identical to another adopter's schema.
+## Versioning
 
-## Data boundary
-
-Generic CMS records may include:
-
-- content identity;
-- slug/path;
-- title/body/summary;
-- type;
-- publication state;
-- author/editor references;
-- publish timestamps;
-- navigation metadata;
-- SEO metadata;
-- media references;
-- version/revision metadata.
-
-Private application data should not be pushed into generic CMS tables merely because the CMS already has persistence.
-
-## Extension boundary
-
-Host projects should integrate through documented APIs, adapters or extension hooks rather than editing CMS core files directly whenever practical.
-
-This enables a project to upgrade from one Devina CMS version to another without repeatedly reconciling local edits.
-
-## Versioning direction
-
-Devina CMS will use semantic versioning once packaged releases begin:
-
-- patch: compatible fixes;
-- minor: backward-compatible features;
-- major: breaking contracts or migrations.
-
-Before `1.0.0`, APIs may still evolve quickly; breaking changes should nevertheless be documented clearly.
+Semantic versioning begins with packaged releases. Before `1.0.0`, contracts may evolve, but breaking changes must be documented in `CHANGELOG.md` and migration notes.
 
 ## Security model
 
-Security must not rely on source secrecy. Public source may contain authentication and authorization implementation patterns, but no production credentials or private state.
-
-Host applications must apply least privilege, server-side authorization, secure secret storage and secure session handling appropriate to their deployment.
+Security must not rely on source secrecy. Source may contain authentication and authorization implementation, but never production credentials or private state. Production deployments should enforce HTTPS, least privilege, secure secret storage, database backups outside the web root, server-level request/rate controls, and an appropriate CSP in the host product.
