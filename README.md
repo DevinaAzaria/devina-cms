@@ -2,72 +2,69 @@
 
 A lightweight, reusable public-content CMS created and maintained by **DevinaAzaria**.
 
-Devina CMS is designed for websites that need a manageable public content layer while keeping application-specific business logic in a separate web application.
+Devina CMS is designed for products that need manageable public/editorial content while keeping product-specific business logic in a separate host application.
 
-## Status
+**Current version:** `0.1.0-dev` — functional foundation, pre-release.
 
-Early foundation / pre-release.
+## What v0.1 includes
 
-The first production adopter is planned to be **DevinaHQ / Olympiad Learning System (OLS)**.
+- Pages, articles/news, and events
+- Draft / publish state and scheduled publication
+- Navigation locations
+- Media metadata and controlled uploads
+- SEO title and description
+- Small session-based admin/editor UI
+- Read-only public JSON API
+- SQLite and MySQL/MariaDB persistence
+- PHP library integration for host applications
+- No runtime package dependencies
 
-## Goals
+Devina CMS intentionally does **not** contain learning, commerce, booking, CRM, assessment, customer workflows, or other project-specific business logic.
 
-Devina CMS aims to provide a small, reusable content layer for:
-
-- pages;
-- articles / news;
-- events;
-- navigation;
-- media metadata;
-- SEO metadata;
-- editorial workflow;
-- simple admin/editor operations;
-- extension hooks for host applications.
-
-It is intentionally **not** intended to become a general-purpose replacement for WordPress or a place for project-specific business logic.
-
-## Architecture principle
+## Architecture
 
 ```text
-Devina CMS
-  ├── public/editorial content
-  ├── admin/editor UI
-  ├── content API / adapters
-  └── extension hooks
-
-Host application
-  ├── authentication / RBAC
-  ├── business workflows
-  ├── transactions
-  ├── domain data
-  └── private integrations
+Host Product
+├── Devina CMS       public/editorial
+└── Host application domain/business logic
 ```
 
-A host project may use Devina CMS from a personal account, company account, or GitHub organization. Adoption does not require the project to belong to DevinaHQ.
+A host may integrate Devina CMS as a PHP library or consume its read-only API from another runtime.
+
+## Quick start
+
+Requires PHP 8.2+ with PDO and either SQLite or MySQL/MariaDB.
+
+```bash
+cp .env.example .env
+export DEVINA_CMS_ADMIN_PASSWORD='a-long-random-password'
+php bin/setup.php --email=admin@example.com --name='Admin'
+php -S 127.0.0.1:8080 -t public public/router.php
+```
+
+Open Admin at `http://127.0.0.1:8080/admin/` and API health at `http://127.0.0.1:8080/health`.
+
+See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md), [`docs/API.md`](./docs/API.md), and [`docs/INTEGRATION.md`](./docs/INTEGRATION.md).
 
 ## First adopter
 
-Planned production adoption:
+Planned production adoption: `DevinaHQ/olympiad-learning-system` as the public/editorial content layer for `ols.devina.id`.
 
-- `DevinaHQ/olympiad-learning-system` — public content layer for `ols.devina.id`
+OLS remains a separate application and keeps its olympiad-specific engines and business logic outside this repository.
 
-The OLS application itself remains a separate product and does not become part of this public CMS repository.
+## Security boundary
 
-## Licensing
-
-Devina CMS is licensed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE) and [`NOTICE`](./NOTICE).
-
-Organizations that redistribute Devina CMS or derivative distributions must preserve the notices required by the Apache License 2.0. Projects may additionally provide a visible technology credit, for example:
-
-> Public content layer powered by Devina CMS — created and maintained by DevinaAzaria.
-
-See [`docs/ADOPTION.md`](./docs/ADOPTION.md) and [`docs/LICENSING.md`](./docs/LICENSING.md).
-
-## Security
-
-Do not commit secrets, API keys, production credentials, private client data, database dumps, or production backups to this repository.
+Never commit production `.env`, API keys, credentials, customer/user data, database dumps, or production backups. Uploaded files and runtime storage are ignored by Git.
 
 See [`SECURITY.md`](./SECURITY.md).
+
+## Licensing and attribution
+
+Devina CMS is licensed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE), [`NOTICE`](./NOTICE), and [`docs/LICENSING.md`](./docs/LICENSING.md).
+
+Recommended adopter credit:
+
+> Devina CMS — created and maintained by DevinaAzaria, licensed under Apache License 2.0.
 
 ## Contributing
 
